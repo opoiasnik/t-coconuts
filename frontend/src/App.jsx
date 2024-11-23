@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MainPage from './pages/MainPage';
 import LoginPage from './pages/LoginPage';
@@ -10,7 +9,7 @@ function App() {
       <Routes>
         <Route path="/" element={<MainPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/drag-and-drop" element={<DragAndDropPage />} />
+        <Route path="/upload" element={<DragAndDropPage />} />
       </Routes>
     </Router>
   );
