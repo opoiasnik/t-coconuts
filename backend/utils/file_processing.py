@@ -29,20 +29,21 @@ def save_styled_pdf(output_path, extracted_data):
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
 
-    # Настройка шрифта
-    pdf.set_font("Arial", size=12)
+    # Загрузка шрифтов с поддержкой Unicode
+    pdf.add_font('DejaVu', '', 'DejaVuSans.ttf', uni=True)
+    pdf.add_font('DejaVu', 'B', 'DejaVuSans-Bold.ttf', uni=True)
+    pdf.add_font('DejaVu', 'I', 'DejaVuSans-Oblique.ttf', uni=True)
+    pdf.add_font('DejaVu', 'BI', 'DejaVuSans-BoldOblique.ttf', uni=True)
 
     for page in extracted_data:
         pdf.add_page()
-        pdf.set_font("Arial", style="B", size=14)
+        pdf.set_font('DejaVu', style="B", size=14)
         pdf.cell(200, 10, f"Page {page['page_number']}", ln=True, align='C')  # Номер страницы
-        pdf.set_font("Arial", size=12)
+        pdf.set_font('DejaVu', size=12)
 
         # Добавление текста
-        for word in page["layout"]:
-            x, y = word["x0"], word["top"]
-            pdf.set_xy(x, y)  # Установка координат
-            pdf.cell(0, 10, word["text"], ln=True)  # Текст строки
+        if page["text"]:
+            pdf.multi_cell(0, 10, page["text"])
 
     # Сохранение PDF
     pdf.output(output_path)
