@@ -1,9 +1,21 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useClerk, useUser } from '@clerk/clerk-react'; // Импортируем Clerk
 import '../styles/MainPage.css';
 
 function MainPage() {
   const navigate = useNavigate();
+  const { user } = useUser(); // Получаем информацию о пользователе из Clerk
+  const { openSignIn } = useClerk(); // Функция для открытия окна авторизации
+
+  const handleGetStartedClick = () => {
+    if (user) {
+      // Если пользователь авторизован, переходим на страницу загрузки
+      navigate('/upload');
+    } else {
+      // Если пользователь не авторизован, открываем окно авторизации
+      openSignIn();
+    }
+  };
 
   return (
     <div className="main-page">
@@ -38,7 +50,7 @@ function MainPage() {
           Upload your contracts or documents and let our AI analyze and suggest improvements.
           Approve or customize changes to perfect your documents.
         </p>
-        <button className="btn" onClick={() => navigate('/upload')}>
+        <button className="btn" onClick={handleGetStartedClick}>
           Get Started →
         </button>
       </div>
