@@ -55,33 +55,19 @@ def upload_document():
     try:
         logging.info(f"Processing file {file_path}.")
         results = process_file(file_path)
+        
+        # Логируем результат обработки
+        if "text" in results:
+            logging.info(f"Processing successful. Extracted text: {results['text'][:500]}...")
+        else:
+            logging.error(f"Processing failed. Error: {results.get('error')}")
+
         logging.info(f"File processed successfully. Results: {results}")
     except Exception as e:
         logging.error(f"Error during file processing: {e}")
         return jsonify({"error": "Failed to process file"}), 500
 
     return jsonify({"message": "File uploaded and processed", "results": results}), 200
-
-# API для извлечения текста из файла
-@app.route('/document_text/<filename>', methods=['GET'])
-def get_document_text(filename):
-    logging.info(f"Document text endpoint was accessed for file: {filename}.")
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    if not os.path.exists(file_path):
-        logging.error(f"File not found: {filename}.")
-        return jsonify({"error": "File not found"}), 404
-
-    try:
-        logging.info(f"Processing text from file: {file_path}.")
-        results = process_file(file_path)
-        if "error" in results:
-            logging.error(f"Error in file processing: {results['error']}")
-            return jsonify({"error": results["error"]}), 400
-        logging.info(f"Successfully processed text for file: {filename}.")
-        return jsonify(results), 200
-    except Exception as e:
-        logging.error(f"Error during text extraction: {e}")
-        return jsonify({"error": "Failed to extract text"}), 500
 
 # API для преобразования речи в текст (Speech-to-Text)
 @app.route('/speech_to_text', methods=['POST'])
@@ -114,6 +100,7 @@ def speech_to_text():
         logging.error(f"Error during speech recognition: {e}")
         return jsonify({"error": "Failed to process speech"}), 500
 
+# API для обработки промта
 @app.route('/process_prompt', methods=['POST'])
 def process_prompt():
     """
@@ -125,6 +112,9 @@ def process_prompt():
     # Получаем текстовый ввод и текст документа
     instructions = data.get('instructions', '').strip()
     document_text = data.get('document_text', '').strip()
+
+    logging.info(f"Received instructions: {instructions}")
+    logging.info(f"Received document text (first 500 chars): {document_text[:500]}...")
 
     if not instructions:
         logging.error("No instructions provided.")
@@ -147,53 +137,13 @@ def process_prompt():
             temperature=0.7,
         )
         analysis = response.choices[0].message["content"]
-        logging.info(f"Analysis completed: {analysis}")
+        logging.info(f"Analysis completed: {analysis[:500]}...")
 
         return jsonify({"message": "Prompt processed successfully", "analysis": analysis}), 200
 
     except Exception as e:
         logging.error(f"Error during prompt processing: {e}")
         return jsonify({"error": "Failed to process prompt"}), 500
-
-    """
-    Обработка промта с документом и инструкциями, отправленными с фронтенда.
-    """
-    logging.info("Processing prompt endpoint was accessed.")
-    data = request.json
-
-    # Получаем текстовый ввод и текст документа
-    instructions = data.get('instructions', '').strip()
-    document_text = data.get('document_text', '').strip()
-
-    if not instructions:
-        logging.error("No instructions provided.")
-        return jsonify({"error": "Instructions are required."}), 400
-
-    if not document_text:
-        logging.error("No document text provided.")
-        return jsonify({"error": "Document text is required."}), 400
-
-    try:
-        logging.info("Sending prompt and document text to OpenAI for analysis.")
-        # Отправляем данные в OpenAI API для анализа
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": instructions},
-                {"role": "user", "content": document_text},
-            ],
-            max_tokens=1000,
-            temperature=0.7,
-        )
-        analysis = response['choices'][0]['message']['content']
-        logging.info(f"Analysis completed: {analysis}")
-
-        return jsonify({"message": "Prompt processed successfully", "analysis": analysis}), 200
-
-    except Exception as e:
-        logging.error(f"Error during prompt processing: {e}")
-        return jsonify({"error": "Failed to process prompt"}), 500
-
 
 if __name__ == '__main__':
     logging.info("Starting Flask application.")

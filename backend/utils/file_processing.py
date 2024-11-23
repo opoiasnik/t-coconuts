@@ -3,26 +3,46 @@ from PIL import Image
 from PyPDF2 import PdfReader
 import pdfplumber
 from fpdf import FPDF
+import logging
+
 
 def process_file(file_path):
-    """Обрабатывает PDF-файл и сохраняет текст с разметкой в новом PDF."""
     try:
         with pdfplumber.open(file_path) as pdf:
-            extracted_data = []
+            extracted_text = ""
             for page in pdf.pages:
-                extracted_data.append({
-                    "page_number": page.page_number,
-                    "text": page.extract_text(),
-                    "layout": page.extract_words()  # Извлечение разметки текста
-                })
+                page_text = page.extract_text()
+                if page_text:
+                    extracted_text += page_text + "\n"  # Сохраняем переносы строк
 
-        # Сохранение в новый PDF с сохранением разметки
-        styled_pdf_path = file_path.replace('.pdf', '_processed.pdf')
-        save_styled_pdf(styled_pdf_path, extracted_data)
+        if not extracted_text.strip():
+            raise ValueError("No text could be extracted from the PDF. It might be an image-based PDF.")
 
-        return {"message": "File processed successfully", "styled_pdf": styled_pdf_path}
+        logging.info(f"Extracted text (first 500 chars): {extracted_text[:500]}...")
+        return {"text": extracted_text, "message": "File processed successfully"}
+
     except Exception as e:
-        return {"error": f"Failed to process file: {e}"}
+        logging.error(f"Failed to process file: {e}")
+        return {"error": str(e)}
+
+    try:
+        with pdfplumber.open(file_path) as pdf:
+            extracted_text = ""
+            for page in pdf.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    extracted_text += page_text + "\n"
+
+        if not extracted_text.strip():
+            raise ValueError("No text could be extracted from the PDF. It might be an image-based PDF.")
+
+        logging.info(f"Extracted text (first 500 chars): {extracted_text[:500]}...")
+        return {"text": extracted_text, "message": "File processed successfully"}
+
+    except Exception as e:
+        logging.error(f"Failed to process file: {e}")
+        return {"error": str(e)}
+
     
 def save_styled_pdf(output_path, extracted_data):
     """Создает новый PDF с сохранением структуры текста."""

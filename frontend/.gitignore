@@ -12,7 +12,9 @@ node_modules
 dist
 dist-ssr
 *.local
-
+# Исключение окружения Python
+venv/
+__pycache__/
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
