@@ -1,0 +1,6 @@
+pip install flask-cors
+pip install pytesseract
+pip install pillow
+pip install pymongo
+pip install transformers
+pip install torch
