@@ -7,17 +7,24 @@ import "../styles/DragAndDropPage.css";
 import MicIcon from "@mui/icons-material/Mic";
 import MicOffIcon from "@mui/icons-material/MicOff";
 import IconButton from "@mui/material/IconButton";
+import DiffMatchPatch from "diff-match-patch";
+import CloseIcon from "@mui/icons-material/Close";
+import CheckIcon from "@mui/icons-material/Check";
+import EditIcon from "@mui/icons-material/Edit";
+import DiffComponent from "../components/Diff"
 
 function DragAndDropPage() {
   const { isSignedIn } = useUser();
   const [pdfFile, setPdfFile] = useState(null); // Selected PDF file
   const [pdfText, setPdfText] = useState(""); // Extracted text from PDF
-  const [aiSuggestions, setAiSuggestions] = useState(""); // AI Suggestions
+  const [aiSuggestions, setAiSuggestions] = useState([]); // AI Suggestions as React elements
   const [instructions, setInstructions] = useState(""); // User instructions
   const [errorMessage, setErrorMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false); // Voice recording state
   const fileInputRef = useRef(null);
   const recognitionRef = useRef(null);
+
+  const dmp = new DiffMatchPatch();
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
@@ -28,13 +35,13 @@ function DragAndDropPage() {
     setPdfFile(file);
     setErrorMessage("");
     setPdfText(""); // Reset PDF text when a new file is selected
-    setAiSuggestions(""); // Reset AI suggestions
+    setAiSuggestions([]); // Reset AI suggestions
   };
 
   const handleCancelUpload = () => {
     setPdfFile(null);
     setPdfText("");
-    setAiSuggestions("");
+    setAiSuggestions([]);
     fileInputRef.current.value = null; // Reset file input
   };
 
@@ -67,7 +74,8 @@ function DragAndDropPage() {
         });
 
         const { analysis } = promptResponse.data;
-        setAiSuggestions(analysis || "No suggestions provided.");
+        const highlightedElements = highlightDifferences(extractedText, analysis || "");
+        setAiSuggestions(highlightedElements);
       } else {
         setErrorMessage("Please provide instructions and ensure the text is extracted successfully.");
       }
@@ -76,6 +84,80 @@ function DragAndDropPage() {
       console.error(error);
     }
   };
+
+  // Modified function to return an array of React elements
+  const highlightDifferences = (original, updated) => {
+    const diffs = dmp.diff_main(original, updated);
+    dmp.diff_cleanupSemantic(diffs);
+  
+    const processedDiffs = [];
+    for (let i = 0; i < diffs.length; i++) {
+      const [type, text] = diffs[i];
+  
+      if (type === -1 && diffs[i + 1] && diffs[i + 1][0] === 1) {
+        // Substitution detected
+        const [nextType, nextText] = diffs[i + 1];
+        processedDiffs.push({
+          type: "substitution",
+          originalText: text,
+          newText: nextText,
+        });
+        i++; // Skip the next diff as it's part of the substitution
+      } else if (type === 1) {
+        // Addition
+        processedDiffs.push({
+          type: "added",
+          text: text,
+        });
+      } else if (type === -1) {
+        // Deletion
+        processedDiffs.push({
+          type: "removed",
+          text: text,
+        });
+      } else {
+        // No change
+        processedDiffs.push({
+          type: "equal",
+          text: text,
+        });
+      }
+    }
+  
+    return processedDiffs.map((diff, index) => {
+      if (diff.type === "substitution") {
+        return (
+          <DiffComponent
+            key={index}
+            type="substitution"
+            originalText={diff.originalText}
+            newText={diff.newText}
+          />
+        );
+      } else if (diff.type === "added") {
+        return (
+          <DiffComponent
+            key={index}
+            type="added"
+            text={diff.text}
+            originalText=""
+          />
+        );
+      } else if (diff.type === "removed") {
+        return (
+          <DiffComponent
+            key={index}
+            type="removed"
+            text={diff.text}
+            originalText={diff.text}
+          />
+        );
+      } else {
+        return <span key={index}>{diff.text}</span>;
+      }
+    });
+  };
+  
 
   const toggleVoiceInput = () => {
     if (!("webkitSpeechRecognition" in window)) {
@@ -193,22 +275,18 @@ function DragAndDropPage() {
             <div className="drag-and-drop-column">
               <h3 className="drag-and-drop-section-title">Original Text</h3>
               <div className="drag-and-drop-text-box">
-              {pdfText || (
-                <p className="drag-and-drop-placeholder">
-                  No document uploaded yet. The text will appear here.
-                </p>
-              )}
-            </div>
+                {pdfText || (
+                  <p className="drag-and-drop-placeholder">
+                    No document uploaded yet. The text will appear here.
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="drag-and-drop-column">
               <h3 className="drag-and-drop-section-title">AI Suggestions</h3>
               <div className="drag-and-drop-text-box ai-suggestions">
-                {aiSuggestions || (
-                  <p className="drag-and-drop-placeholder">
-                    AI suggestions and enhancements will appear here after analysis.
-                  </p>
-                )}
+                {aiSuggestions.length > 0 ? aiSuggestions : <p>No suggestions yet.</p>}
               </div>
             </div>
           </div>
@@ -222,3 +300,4 @@ function DragAndDropPage() {
 }
 
 export default DragAndDropPage;
+

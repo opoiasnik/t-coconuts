@@ -252,3 +252,46 @@ html, body {
     overflow: hidden;
 }
   
+.added {
+  background-color: #d4fcd4; /* Light green for additions */
+  text-decoration: none;
+}
+
+.removed {
+  background-color: #fcd4d4; /* Light red for removals */
+  text-decoration: line-through;
+}
+.diff-component {
+  position: relative;
+  display: inline-block;
+}
+
+.diff-component .icons {
+  position: absolute;
+  top: -20px; /* Adjust as needed */
+  right: 0;
+  display: flex;
+  gap: 2px;
+}
+
+.added {
+  background-color: #e6ffe6; /* Light green background */
+}
+
+.removed {
+  background-color: #ffe6e6; /* Light red background */
+  text-decoration: line-through;
+}
+
+.substitution .removed {
+  background-color: #ffe6e6;
+  text-decoration: line-through;
+}
+
+.substitution .added {
+  background-color: #e6ffe6;
+}
+
+.substitution .arrow {
+  margin: 0 5px;
+}

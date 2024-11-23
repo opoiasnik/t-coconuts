@@ -105,17 +105,18 @@ def upload_document():
         return jsonify(response), 500
 
 
-# API для обработки промта
+
+# API for prompt processing
 @app.route('/process_prompt', methods=['POST'])
 def process_prompt():
     """
-    Обработка промта с документом и инструкциями, отправленными с фронтенда.
+    Process the prompt by analyzing and improving specific parts of the document based on instructions.
     """
     global temp_changes
     logging.info("Processing prompt endpoint was accessed.")
     data = request.json
 
-    # Получаем текстовый ввод и текст документа
+    # Get user instructions and document text
     instructions = data.get('instructions', '').strip()
     document_text = data.get('document_text', '').strip()
 
@@ -136,15 +137,38 @@ def process_prompt():
 
     try:
         logging.info("Sending prompt and document text to OpenAI for analysis.")
+        
+        # New prompt for minimal corrections
+        prompt_instructions = (
+            f"Using the following instructions:\n\n{instructions}\n\n"
+                "Please analyze the document below and make improvements specifically "
+                "based on the instructions provided. This includes:\n"
+                "1. Adding any missing or necessary information.\n"
+                "2. Removing redundant or unnecessary information.\n"
+                "3. Rephrasing unclear or overly complex sentences to improve readability.\n"
+                "4. Keeping unchanged parts of the document intact if they do not require any updates.\n\n"
+                f"Document:\n{document_text}\n\n"
+                "Return the full document with only the adjusted parts changed. If no changes are necessary "
+                "based on the instructions, return the original text exactly as it was provided. "
+                "Provide a short explanation at the end of the document describing why no changes were made, "
+                "if applicable. Returning document must be without commenting or discussion, only pure modified or not text from original."
+
+
+        )
+
+
+        # Send data to OpenAI API
         response = openai.ChatCompletion.create(
             model="gpt-4",  # Укажите актуальную модель
             messages=[
-                {"role": "system", "content": instructions},
-                {"role": "user", "content": document_text},
+                {"role": "system", "content": "You are a text improvement assistant that modifies only specific problematic parts of the input text based on user instructions."},
+                {"role": "user", "content": prompt_instructions},
             ],
-            max_tokens=1000,
-            temperature=0.7,
+            max_tokens=2000,  # Adjust as needed to accommodate the text size
+            temperature=0.5,  # Lower temperature for more precise corrections
         )
+        analysis = response.choices[0].message["content"]
+        logging.info(f"Analysis completed (first 500 chars): {analysis[:500]}...")
 
         # Получение текста анализа
         analysis = response['choices'][0]['message']['content']
