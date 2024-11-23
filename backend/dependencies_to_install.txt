@@ -11,3 +11,4 @@ gtts
 pydub
 pdfplumber
 fpdf
+torch
