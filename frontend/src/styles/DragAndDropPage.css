@@ -1,54 +1,59 @@
 /* General Container */
 .drag-and-drop-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 20px;
-    font-family: "Arial", sans-serif;
-  }
+  width: 100%;
+  height: 100%; /* Take full height of viewport */
+  margin: 0;
+  padding: 10px;
+  font-family: "Arial", sans-serif;
+  box-sizing: border-box; /* Include padding in the height calculation */
+}
   
   /* Header */
   .drag-and-drop-header {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 10px;
   }
   
   .drag-and-drop-title {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: bold;
     margin-bottom: 10px;
   }
   
   .drag-and-drop-subtitle {
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: #6c757d;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
   }
   
   /* Instructions Input */
   .instructions-input-container {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
   }
   
   .instructions-input {
-    width: 100%;
-    height: 100px;
-    padding: 10px;
-    font-size: 1rem;
+    width: 60%;
+    height: 80px;
+    padding: 8px;
+    font-size: 0.9rem;
     border: 1px solid #ccc;
     border-radius: 10px;
     resize: none;
+    margin: 0 auto;
   }
   
   /* Upload Box */
   .drag-and-drop-upload-box {
     border: 2px dashed #4caf50;
     border-radius: 10px;
-    padding: 30px;
+    padding: 20px;
     text-align: center;
     background-color: #f9f9f9;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    width: 60%;
+    margin: 0 auto;
   }
   
   .drag-and-drop-upload-box:hover {
@@ -65,7 +70,7 @@
   }
   
   .drag-and-drop-upload-text {
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     color: #4caf50;
     font-weight: bold;
   }
@@ -74,20 +79,24 @@
   .drag-and-drop-content {
     display: flex;
     gap: 20px;
-    margin-top: 40px;
-  }
+    flex-wrap: wrap; /* Allow wrapping for smaller screens */
+    margin-top: 20px;
+    justify-content: space-between;
+    width: 100%;
+}
   
-  .drag-and-drop-column {
-    flex: 1;
-    min-width: 45%;
-  }
+.drag-and-drop-column {
+  flex: 1;
+  min-width: 300px; /* Ensure flexibility */
+  padding: 10px;
+}
   
   .drag-and-drop-text-box {
-    padding: 10px;
+    padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
     background-color: #fff;
-    height: 300px;
+    height: 250px;
     overflow-y: auto;
     white-space: pre-wrap; /* Сохраняет табуляцию, пробелы и переносы строк */
     font-family: monospace; /* Необязательно, для отображения текста в стиле кодового редактора */
@@ -107,12 +116,13 @@
   .drag-and-drop-error {
     color: red;
     margin-top: 10px;
+    font-size: 0.9rem;
   }
   
   /* Unauthorized Message */
   .drag-and-drop-unauthorized {
     text-align: center;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-weight: bold;
     color: #dc3545;
   }
@@ -139,6 +149,8 @@
     display: flex;
     justify-content: flex-end;
     margin-bottom: 5px;
+    width: 60%;
+    margin: 0 auto;
   }
   
   .voice-record-btn {
@@ -232,4 +244,11 @@
   margin-top: 20px;
 }
 
+html, body {
+    height: 100%; /* Ensure both html and body take full height */
+    width: 100%;  /* Ensure body takes full width */
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
   
