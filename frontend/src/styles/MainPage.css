@@ -1,0 +1,208 @@
+/* MainPage.css */
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+  
+  .main-page {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  .left-section {
+    flex: 1;
+    background-color: #e8f5e9; /* Light green background */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .right-section {
+    flex: 1;
+    background-color: #fff; /* White background */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  .bubble-container {
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .bubble {
+    background-color: #66bb6a; /* Green background for bubbles */
+    color: #fff;
+    border-radius: 12px;
+    padding: 20px 25px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    max-width: 70%;
+    align-self: flex-start;
+    position: relative;
+    animation: floating 4s infinite ease-in-out;
+  }
+  .bubble2 {
+    background-color: #66bb6a; /* Green background for bubbles */
+    color: #fff;
+    border-radius: 12px;
+    padding: 20px 25px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    max-width: 70%;
+    align-self: flex-start;
+    position: relative;
+    animation: floating2 4s infinite ease-in-out;
+  }
+  
+  .bubble:nth-child(even),  .bubble2:nth-child(even) {
+    align-self: flex-end;
+  }
+  
+  .bubble:nth-child(odd), .bubble2:nth-child(odd) {
+    animation-delay: 0.2s;
+  }
+  
+  .bubble:nth-child(even) , .bubble2:nth-child(even){
+    animation-delay: 0.4s;
+  }
+  
+  @keyframes floating {
+    0% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+  @keyframes floating2 {
+    0% {
+      transform: translateY(-10px);
+    }
+    50% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(-10px);
+    }
+  }
+  
+  .bubble:before, .bubble2:before{
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    top: 20px;
+    border: 10px solid transparent;
+  }
+  
+  .bubble:nth-child(odd):before, .bubble2:nth-child(odd):before {
+    left: -20px;
+    border-right-color: #66bb6a;
+  }
+  
+  .bubble:nth-child(even):before, .bubble2:nth-child(even):before {
+    right: -20px;
+    border-left-color: #66bb6a;
+  }
+  
+  .bubble span, .bubble2 span {
+    display: block;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+  }
+  
+  .right-section h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #66bb6a; /* Green color for the heading */
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .right-section .highlight {
+    color: #388e3c; /* Darker green for emphasis */
+  }
+  
+  .right-section .description {
+    margin-top: 20px;
+    color: #555;
+    font-size: 1.5rem;
+    max-width: 80%;
+    text-align: center;
+    line-height: 1.6;
+  }
+  
+  .btn {
+    background: linear-gradient(135deg, #4caf50, #81c784); /* Gradient background */
+    color: #fff;
+    padding: 15px 30px;
+    border-radius: 50px; /* Rounded button */
+    font-size: 1.3rem;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2), inset 0 -3px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 30px;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+  }
+  
+ 
+  
+  .btn:hover:before {
+    top: -30%;
+    left: -30%;
+    opacity: 1;
+  }
+  
+ 
+  
+  .btn:active {
+    
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2), inset 0 -2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  @media (max-width: 768px) {
+    .main-page {
+      flex-direction: column;
+    }
+  
+    .bubble-container {
+      width: 100%;
+      align-items: center;
+    }
+  
+    .bubble {
+      max-width: 80%;
+    }
+  
+    .right-section h1 {
+      font-size: 2.5rem;
+    }
+  
+    .right-section .description {
+      font-size: 1.2rem;
+    }
+  }
+  
