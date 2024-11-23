@@ -83,14 +83,16 @@
   }
   
   .drag-and-drop-text-box {
+    padding: 10px;
     border: 1px solid #ccc;
-    border-radius: 10px;
-    background-color: #f8f9fa;
-    padding: 15px;
+    border-radius: 4px;
+    background-color: #fff;
     height: 300px;
     overflow-y: auto;
-    white-space: pre-wrap;
+    white-space: pre-wrap; /* Сохраняет табуляцию, пробелы и переносы строк */
+    font-family: monospace; /* Необязательно, для отображения текста в стиле кодового редактора */
   }
+  
   
   .ai-suggestions {
     background-color: #e8f5e9;

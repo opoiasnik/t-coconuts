@@ -192,12 +192,12 @@ function DragAndDropPage() {
             <div className="drag-and-drop-column">
               <h3 className="drag-and-drop-section-title">Original Text</h3>
               <div className="drag-and-drop-text-box">
-                {pdfText || (
-                  <p className="drag-and-drop-placeholder">
-                    No document uploaded yet. The text will appear here.
-                  </p>
-                )}
-              </div>
+              {pdfText || (
+                <p className="drag-and-drop-placeholder">
+                  No document uploaded yet. The text will appear here.
+                </p>
+              )}
+            </div>
             </div>
 
             <div className="drag-and-drop-column">
