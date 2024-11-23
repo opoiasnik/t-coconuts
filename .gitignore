@@ -1,14 +1,60 @@
-# Исключение окружения Python
-venv/
-__pycache__/
-
-# Исключение файлов IDE
-.vscode/
-.idea/
-
-# Логи и временные файлы
+# Logs
+logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependency directories
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Build output
+/public/build/
+build/
+frontend/build/
+frontend/dist/
+frontend/public/*.cache
+
+# System files
+Thumbs.db
+ehthumbs.db
+Icon?
+._*
+*.bak
 *.tmp
 
-# Загруженные файлы
-static/uploaded_docs/
+# Vite specific
+.vite/
+.vite-cache/
+.cache/
+
+# React specific
+*.env.local
+*.env.development.local
+*.env.test.local
+*.env.production.local
+
+# npm package lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Git-related
+.git/
+.gitignore~
