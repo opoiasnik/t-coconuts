@@ -1,8 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from utils.file_processing import process_file
-from utils.database import save_document, get_validation_results
-from models.document_validator import validate_document
 import os
 import logging
 
@@ -50,39 +48,11 @@ def upload_document():
         logging.info(f"Processing file {file_path}.")
         results = process_file(file_path)
         logging.info(f"File processed successfully. Results: {results}")
-        save_document(file.filename, results)
-        logging.info(f"Document {file.filename} saved to database.")
     except Exception as e:
         logging.error(f"Error during file processing: {e}")
         return jsonify({"error": "Failed to process file"}), 500
 
     return jsonify({"message": "File uploaded and processed", "results": results}), 200
-
-# API для валидации документа
-@app.route('/validate', methods=['POST'])
-def validate():
-    logging.info("Validate endpoint was accessed.")
-    data = request.get_json()
-    document_id = data.get('document_id')
-    logging.info(f"Validating document with ID: {document_id}.")
-    try:
-        validation_results = validate_document(document_id)
-        logging.info(f"Validation results for document {document_id}: {validation_results}")
-        return jsonify(validation_results), 200
-    except Exception as e:
-        logging.error(f"Error during validation: {e}")
-        return jsonify({"error": "Validation failed"}), 500
-
-# API для получения результатов валидации
-@app.route('/results/<document_id>', methods=['GET'])
-def get_results(document_id):
-    logging.info(f"Get results endpoint was accessed for document ID: {document_id}.")
-    results = get_validation_results(document_id)
-    if not results:
-        logging.warning(f"No results found for document ID: {document_id}.")
-        return jsonify({"error": "No results found"}), 404
-    logging.info(f"Results for document {document_id}: {results}")
-    return jsonify(results), 200
 
 @app.route('/document_text/<filename>', methods=['GET'])
 def get_document_text(filename):
