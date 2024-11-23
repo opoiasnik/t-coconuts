@@ -295,3 +295,18 @@ html, body {
 .substitution .arrow {
   margin: 0 5px;
 }
+.ai-suggestions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Раздвигает элементы: текст влево, динамик вправо */
+}
+
+.ai-suggestions-header h3 {
+  margin: 0;
+  font-size: 1.2rem; /* Размер шрифта для заголовка */
+}
+
+.ai-suggestions-header .MuiIconButton-root {
+  margin-left: 10px; /* Отступ между заголовком и динамиком */
+}
+

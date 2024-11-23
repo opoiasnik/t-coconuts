@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from models import session, UserRequest  # Подключение модели для сохранения запросов
 import json
 import pyttsx3  # Для озвучивания текста
+from gtts import gTTS
 
 # Load environment variables from .env file
 load_dotenv()
@@ -138,49 +139,54 @@ def process_prompt():
     try:
         logging.info("Sending prompt and document text to OpenAI for analysis.")
         
-        # New prompt for minimal corrections
+        # Prompt instructions for OpenAI API
         prompt_instructions = (
             f"Using the following instructions:\n\n{instructions}\n\n"
-                "Please analyze the document below and make improvements specifically "
-                "based on the instructions provided. This includes:\n"
-                "1. Adding any missing or necessary information.\n"
-                "2. Removing redundant or unnecessary information.\n"
-                "3. Rephrasing unclear or overly complex sentences to improve readability.\n"
-                "4. Keeping unchanged parts of the document intact if they do not require any updates.\n\n"
-                f"Document:\n{document_text}\n\n"
-                "Return the full document with only the adjusted parts changed. If no changes are necessary "
-                "based on the instructions, return the original text exactly as it was provided. "
-                "Provide a short explanation at the end of the document describing why no changes were made, "
-                "if applicable. Returning document must be without commenting or discussion, only pure modified or not text from original."
-
-
+            "Please analyze the document below and make improvements specifically "
+            "based on the instructions provided. This includes:\n"
+            "1. Adding any missing or necessary information.\n"
+            "2. Removing redundant or unnecessary information.\n"
+            "3. Rephrasing unclear or overly complex sentences to improve readability.\n"
+            "4. Keeping unchanged parts of the document intact if they do not require any updates.\n\n"
+            "At the end of the modified document, provide a brief explanation of the changes made. "
+            "If no changes are required, return the original text along with an explanation of why no changes were made.\n\n"
+            f"Document:\n{document_text}\n\n"
+            "Output format:\n"
+            "1. Updated document content.\n"
+            "2. Explanation of the changes made as a separate section, prefixed with 'Explanation:'."
         )
-
 
         # Send data to OpenAI API
         response = openai.ChatCompletion.create(
-            model="gpt-4",  # Укажите актуальную модель
+            model="gpt-4",
             messages=[
-                {"role": "system", "content": "You are a text improvement assistant that modifies only specific problematic parts of the input text based on user instructions."},
+                {"role": "system", "content": "You are a text improvement assistant."},
                 {"role": "user", "content": prompt_instructions},
             ],
-            max_tokens=2000,  # Adjust as needed to accommodate the text size
-            temperature=0.5,  # Lower temperature for more precise corrections
+            max_tokens=2000,
+            temperature=0.5,
         )
         analysis = response.choices[0].message["content"]
         logging.info(f"Analysis completed (first 500 chars): {analysis[:500]}...")
 
-        # Получение текста анализа
-        analysis = response['choices'][0]['message']['content']
+        # Split the analysis into document content and explanation
+        if "Explanation:" in analysis:
+            content, explanation = analysis.split("Explanation:", 1)
+            content = content.strip()
+            explanation = explanation.strip()
+        else:
+            content = analysis.strip()
+            explanation = "No explanation provided by the model."
 
         # Сохраняем временные изменения
         temp_changes = {
             "instructions": instructions,
             "document_text": document_text,
-            "analysis": analysis
+            "analysis": content,
+            "explanation": explanation,  # Сохраняем объяснение, но не отправляем на фронтенд
         }
 
-        response_data = {"message": "Prompt processed successfully", "analysis": analysis}
+        response_data = {"message": "Prompt processed successfully", "analysis": content}
         save_request_to_db('/process_prompt', data, response_data)
         return jsonify(response_data), 200
 
@@ -189,6 +195,7 @@ def process_prompt():
         response = {"error": "Failed to process prompt"}
         save_request_to_db('/process_prompt', data, response)
         return jsonify(response), 500
+
 
 
 # API для озвучивания изменений
@@ -201,16 +208,20 @@ def speak_changes():
     if not temp_changes:
         return jsonify({"error": "No changes available for speaking."}), 400
 
-    # Текст для озвучивания
-    text_to_speak = temp_changes.get('analysis', 'No analysis available.')
+    # Текст для озвучивания (объяснение изменений)
+    text_to_speak = temp_changes.get('explanation', 'No explanation available.')
     audio_path = os.path.join(app.config['TEMP_FOLDER'], 'output.mp3')
 
-    # Используем pyttsx3 для генерации речи
-    engine = pyttsx3.init()
-    engine.save_to_file(text_to_speak, audio_path)
-    engine.runAndWait()
+    try:
+        # Используем gTTS для генерации речи
+        tts = gTTS(text=text_to_speak, lang='en')  # Выберите язык, например 'en' для английского
+        tts.save(audio_path)
 
-    return send_file(audio_path, as_attachment=True)
+        return send_file(audio_path, as_attachment=True)
+    except Exception as e:
+        logging.error(f"Error during speech synthesis with gTTS: {e}")
+        return jsonify({"error": "Failed to generate speech."}), 500
+
 
 
 if __name__ == '__main__':

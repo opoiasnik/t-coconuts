@@ -14,7 +14,7 @@ dist-ssr
 *.local
 # Исключение окружения Python
 venv/
-__pycache__/
+/backend/__pycache__/
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

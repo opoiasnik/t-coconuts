@@ -6,12 +6,11 @@ import axios from "axios";
 import "../styles/DragAndDropPage.css";
 import MicIcon from "@mui/icons-material/Mic";
 import MicOffIcon from "@mui/icons-material/MicOff";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import IconButton from "@mui/material/IconButton";
 import DiffMatchPatch from "diff-match-patch";
-import CloseIcon from "@mui/icons-material/Close";
-import CheckIcon from "@mui/icons-material/Check";
-import EditIcon from "@mui/icons-material/Edit";
-import DiffComponent from "../components/Diff"
+import DiffComponent from "../components/Diff";
 
 function DragAndDropPage() {
   const { isSignedIn } = useUser();
@@ -21,6 +20,7 @@ function DragAndDropPage() {
   const [instructions, setInstructions] = useState(""); // User instructions
   const [errorMessage, setErrorMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false); // Voice recording state
+  const [isResponseReceived, setIsResponseReceived] = useState(false); // Tracks if model response is received
   const fileInputRef = useRef(null);
   const recognitionRef = useRef(null);
 
@@ -76,6 +76,7 @@ function DragAndDropPage() {
         const { analysis } = promptResponse.data;
         const highlightedElements = highlightDifferences(extractedText, analysis || "");
         setAiSuggestions(highlightedElements);
+        setIsResponseReceived(true); // Модель ответила, меняем состояние
       } else {
         setErrorMessage("Please provide instructions and ensure the text is extracted successfully.");
       }
@@ -85,15 +86,30 @@ function DragAndDropPage() {
     }
   };
 
-  // Modified function to return an array of React elements
+  const handleSpeakChanges = async () => {
+    try {
+      const response = await axios.get("http://127.0.0.1:5000/speak_changes", {
+        responseType: "blob", // Expecting an audio file
+      });
+
+      // Создаем объект URL для воспроизведения аудио
+      const audioUrl = URL.createObjectURL(response.data);
+      const audio = new Audio(audioUrl);
+      audio.play();
+    } catch (error) {
+      console.error("Error fetching audio:", error);
+      alert("Unable to fetch audio. Please try again.");
+    }
+  };
+
   const highlightDifferences = (original, updated) => {
     const diffs = dmp.diff_main(original, updated);
     dmp.diff_cleanupSemantic(diffs);
-  
+
     const processedDiffs = [];
     for (let i = 0; i < diffs.length; i++) {
       const [type, text] = diffs[i];
-  
+
       if (type === -1 && diffs[i + 1] && diffs[i + 1][0] === 1) {
         // Substitution detected
         const [nextType, nextText] = diffs[i + 1];
@@ -123,7 +139,7 @@ function DragAndDropPage() {
         });
       }
     }
-  
+
     return processedDiffs.map((diff, index) => {
       if (diff.type === "substitution") {
         return (
@@ -157,7 +173,6 @@ function DragAndDropPage() {
       }
     });
   };
-  
 
   const toggleVoiceInput = () => {
     if (!("webkitSpeechRecognition" in window)) {
@@ -284,20 +299,30 @@ function DragAndDropPage() {
             </div>
 
             <div className="drag-and-drop-column">
-              <h3 className="drag-and-drop-section-title">AI Suggestions</h3>
+              <div className="ai-suggestions-header">
+                <h3 className="drag-and-drop-section-title">AI Suggestions</h3>
+                <IconButton
+                  onClick={handleSpeakChanges}
+                  aria-label="speak changes"
+                  color={isResponseReceived ? "primary" : "default"}
+                >
+                  {isResponseReceived ? <VolumeUpIcon /> : <VolumeOffIcon />}
+                </IconButton>
+              </div>
               <div className="drag-and-drop-text-box ai-suggestions">
                 {aiSuggestions.length > 0 ? aiSuggestions : <p>No suggestions yet.</p>}
               </div>
             </div>
+
           </div>
+
+          <Footer />
         </>
       ) : (
         <h1 className="drag-and-drop-unauthorized">You are not authorized to access this page</h1>
       )}
-    
     </div>
   );
 }
 
 export default DragAndDropPage;
-
