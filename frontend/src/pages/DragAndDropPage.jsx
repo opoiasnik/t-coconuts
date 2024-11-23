@@ -1,5 +1,6 @@
 import { useUser } from "@clerk/clerk-react";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 import { useState, useRef } from "react";
 import axios from "axios";
 import "../styles/DragAndDropPage.css";
@@ -125,7 +126,7 @@ function DragAndDropPage() {
   };
 
   return (
-    <div className="drag-and-drop-container">
+    <div className="drag-and-drop-container overflow-hidden">
       {isSignedIn ? (
         <>
           <Header />
@@ -215,6 +216,7 @@ function DragAndDropPage() {
       ) : (
         <h1 className="drag-and-drop-unauthorized">You are not authorized to access this page</h1>
       )}
+    
     </div>
   );
 }
