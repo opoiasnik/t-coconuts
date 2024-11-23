@@ -4,8 +4,15 @@ from utils.file_processing import process_file
 import os
 import logging
 import speech_recognition as sr  # Для распознавания речи
+import openai
+from dotenv import load_dotenv
 
-# Настройка логирования
+# Load environment variables from .env file
+load_dotenv()
+
+# Get the OpenAI API key from environment
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
 logging.basicConfig(
     level=logging.INFO,  # Уровень логирования (DEBUG, INFO, WARNING, ERROR, CRITICAL)
     format="%(asctime)s - %(levelname)s - %(message)s",  # Формат записи
@@ -106,6 +113,86 @@ def speech_to_text():
     except Exception as e:
         logging.error(f"Error during speech recognition: {e}")
         return jsonify({"error": "Failed to process speech"}), 500
+
+@app.route('/process_prompt', methods=['POST'])
+def process_prompt():
+    """
+    Обработка промта с документом и инструкциями, отправленными с фронтенда.
+    """
+    logging.info("Processing prompt endpoint was accessed.")
+    data = request.json
+
+    # Получаем текстовый ввод и текст документа
+    instructions = data.get('instructions', '').strip()
+    document_text = data.get('document_text', '').strip()
+
+    if not instructions:
+        logging.error("No instructions provided.")
+        return jsonify({"error": "Instructions are required."}), 400
+
+    if not document_text:
+        logging.error("No document text provided.")
+        return jsonify({"error": "Document text is required."}), 400
+
+    try:
+        logging.info("Sending prompt and document text to OpenAI for analysis.")
+        # Отправляем данные в OpenAI API для анализа
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": instructions},
+                {"role": "user", "content": document_text},
+            ],
+            max_tokens=1000,
+            temperature=0.7,
+        )
+        analysis = response.choices[0].message["content"]
+        logging.info(f"Analysis completed: {analysis}")
+
+        return jsonify({"message": "Prompt processed successfully", "analysis": analysis}), 200
+
+    except Exception as e:
+        logging.error(f"Error during prompt processing: {e}")
+        return jsonify({"error": "Failed to process prompt"}), 500
+
+    """
+    Обработка промта с документом и инструкциями, отправленными с фронтенда.
+    """
+    logging.info("Processing prompt endpoint was accessed.")
+    data = request.json
+
+    # Получаем текстовый ввод и текст документа
+    instructions = data.get('instructions', '').strip()
+    document_text = data.get('document_text', '').strip()
+
+    if not instructions:
+        logging.error("No instructions provided.")
+        return jsonify({"error": "Instructions are required."}), 400
+
+    if not document_text:
+        logging.error("No document text provided.")
+        return jsonify({"error": "Document text is required."}), 400
+
+    try:
+        logging.info("Sending prompt and document text to OpenAI for analysis.")
+        # Отправляем данные в OpenAI API для анализа
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": instructions},
+                {"role": "user", "content": document_text},
+            ],
+            max_tokens=1000,
+            temperature=0.7,
+        )
+        analysis = response['choices'][0]['message']['content']
+        logging.info(f"Analysis completed: {analysis}")
+
+        return jsonify({"message": "Prompt processed successfully", "analysis": analysis}), 200
+
+    except Exception as e:
+        logging.error(f"Error during prompt processing: {e}")
+        return jsonify({"error": "Failed to process prompt"}), 500
 
 
 if __name__ == '__main__':

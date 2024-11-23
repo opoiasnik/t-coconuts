@@ -9,14 +9,14 @@ import IconButton from "@mui/material/IconButton";
 
 function DragAndDropPage() {
   const { isSignedIn } = useUser();
-  const [pdfFile, setPdfFile] = useState(null); // Состояние для выбранного PDF файла
-  const [pdfText, setPdfText] = useState(""); // Состояние для текста PDF
-  const [aiSuggestions, setAiSuggestions] = useState(""); // Состояние для предложений AI
-  const [instructions, setInstructions] = useState(""); // Состояние для инструкций
+  const [pdfFile, setPdfFile] = useState(null); // Selected PDF file
+  const [pdfText, setPdfText] = useState(""); // Extracted text from PDF
+  const [aiSuggestions, setAiSuggestions] = useState(""); // AI Suggestions
+  const [instructions, setInstructions] = useState(""); // User instructions
   const [errorMessage, setErrorMessage] = useState("");
-  const [isRecording, setIsRecording] = useState(false); // Состояние записи
-  const fileInputRef = useRef(null); // Reference to the file input element
-  const recognitionRef = useRef(null); // Reference для распознавания речи
+  const [isRecording, setIsRecording] = useState(false); // Voice recording state
+  const fileInputRef = useRef(null);
+  const recognitionRef = useRef(null);
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
@@ -26,6 +26,15 @@ function DragAndDropPage() {
     }
     setPdfFile(file);
     setErrorMessage("");
+    setPdfText(""); // Reset PDF text when a new file is selected
+    setAiSuggestions(""); // Reset AI suggestions
+  };
+
+  const handleCancelUpload = () => {
+    setPdfFile(null);
+    setPdfText("");
+    setAiSuggestions("");
+    fileInputRef.current.value = null; // Reset file input
   };
 
   const handleSubmit = async () => {
@@ -33,32 +42,38 @@ function DragAndDropPage() {
       setErrorMessage("Please upload a file before submitting.");
       return;
     }
+
     const formData = new FormData();
     formData.append("file", pdfFile);
-    formData.append("instructions", instructions);
 
     try {
-      const response = await axios.post("http://127.0.0.1:5000/upload", formData, {
+      // Step 1: Convert PDF to text via /upload endpoint
+      const uploadResponse = await axios.post("http://127.0.0.1:5000/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
-      const { results } = response.data;
-      setPdfText(results.text || "No text extracted.");
-      setAiSuggestions(results.ai_text || "AI did not generate any suggestions.");
-      setErrorMessage("");
+      const { results } = uploadResponse.data;
+      const extractedText = results.text || "No text extracted.";
+      setPdfText(extractedText);
+
+      // Step 2: Send the extracted text and instructions to /process_prompt endpoint
+      if (instructions.trim() && extractedText.trim()) {
+        const promptResponse = await axios.post("http://127.0.0.1:5000/process_prompt", {
+          instructions,
+          document_text: extractedText,
+        });
+
+        const { analysis } = promptResponse.data;
+        setAiSuggestions(analysis || "No suggestions provided.");
+      } else {
+        setErrorMessage("Please provide instructions and ensure the text is extracted successfully.");
+      }
     } catch (error) {
-      setErrorMessage("Error uploading file. Please try again.");
+      setErrorMessage("Error processing the file or instructions. Please try again.");
       console.error(error);
     }
-  };
-
-  const handleCancelUpload = () => {
-    setPdfFile(null);
-    setPdfText("");
-    setAiSuggestions("");
-    fileInputRef.current.value = null; // Сбрасываем значение input
   };
 
   const toggleVoiceInput = () => {
@@ -120,7 +135,6 @@ function DragAndDropPage() {
               Provide instructions and upload a PDF document for analysis and suggestions.
             </p>
 
-            {/* Поле для инструкций с кнопкой записи голоса */}
             <div className="instructions-input-container">
               <div className="instructions-header">
                 <IconButton
@@ -140,7 +154,6 @@ function DragAndDropPage() {
               />
             </div>
 
-            {/* Область для загрузки файла */}
             <div
               className={`drag-and-drop-upload-box ${pdfFile ? "success-upload" : ""}`}
               onClick={!pdfFile ? triggerFileInput : undefined}
