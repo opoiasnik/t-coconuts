@@ -9,3 +9,5 @@ SpeechRecognition
 pyttsx3
 gtts
 pydub
+pdfplumber
+fpdf
