@@ -3,6 +3,7 @@ from flask_cors import CORS
 from utils.file_processing import process_file
 import os
 import logging
+import speech_recognition as sr  # Для распознавания речи
 
 # Настройка логирования
 logging.basicConfig(
@@ -54,6 +55,7 @@ def upload_document():
 
     return jsonify({"message": "File uploaded and processed", "results": results}), 200
 
+# API для извлечения текста из файла
 @app.route('/document_text/<filename>', methods=['GET'])
 def get_document_text(filename):
     logging.info(f"Document text endpoint was accessed for file: {filename}.")
@@ -73,6 +75,38 @@ def get_document_text(filename):
     except Exception as e:
         logging.error(f"Error during text extraction: {e}")
         return jsonify({"error": "Failed to extract text"}), 500
+
+# API для преобразования речи в текст (Speech-to-Text)
+@app.route('/speech_to_text', methods=['POST'])
+def speech_to_text():
+    logging.info("Speech-to-Text endpoint was accessed.")
+    if 'file' not in request.files:
+        logging.error("No audio file was uploaded.")
+        return jsonify({"error": "No audio file uploaded"}), 400
+    audio_file = request.files['file']
+    if audio_file.filename == '':
+        logging.error("No audio file selected for upload.")
+        return jsonify({"error": "No selected audio file"}), 400
+
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], audio_file.filename)
+    logging.info(f"Saving audio file to {file_path}.")
+    audio_file.save(file_path)
+
+    try:
+        # Распознавание речи
+        logging.info(f"Processing audio file: {file_path}")
+        recognizer = sr.Recognizer()
+        audio = sr.AudioFile(file_path)
+        with audio as source:
+            recognizer.adjust_for_ambient_noise(source)  # Настройка на шум
+            audio_data = recognizer.record(source)
+        text = recognizer.recognize_google(audio_data)  # Используем Google Speech API
+        logging.info(f"Speech successfully converted to text: {text}")
+        return jsonify({"message": "Speech converted to text successfully", "text": text}), 200
+    except Exception as e:
+        logging.error(f"Error during speech recognition: {e}")
+        return jsonify({"error": "Failed to process speech"}), 500
+
 
 if __name__ == '__main__':
     logging.info("Starting Flask application.")

@@ -5,3 +5,7 @@ pymongo
 transformers
 torch
 tqdm
+SpeechRecognition
+pyttsx3
+gtts
+pydub
