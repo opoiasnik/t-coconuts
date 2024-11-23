@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from utils.file_processing import process_file
 import os
@@ -8,11 +8,11 @@ import openai
 from dotenv import load_dotenv
 from models import session, UserRequest  # Подключение модели для сохранения запросов
 import json
+import pyttsx3  # Для озвучивания текста
 
 # Load environment variables from .env file
 load_dotenv()
 print(f"Loaded API Key: {os.getenv('OPENAI_API_KEY')}")
-
 
 # Get the OpenAI API key from environment
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -31,9 +31,15 @@ app = Flask(__name__)
 CORS(app)  # Для разрешения запросов с фронтенда
 
 UPLOAD_FOLDER = 'static/uploaded_docs'
+TEMP_FOLDER = 'static/temp'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(TEMP_FOLDER, exist_ok=True)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['TEMP_FOLDER'] = TEMP_FOLDER
+
+# Переменная для временного хранения изменений
+temp_changes = {}
 
 
 @app.route('/')
@@ -99,50 +105,13 @@ def upload_document():
         return jsonify(response), 500
 
 
-# API для преобразования речи в текст (Speech-to-Text)
-@app.route('/speech_to_text', methods=['POST'])
-def speech_to_text():
-    logging.info("Speech-to-Text endpoint was accessed.")
-    if 'file' not in request.files:
-        logging.error("No audio file was uploaded.")
-        response = {"error": "No audio file uploaded"}
-        save_request_to_db('/speech_to_text', {}, response)
-        return jsonify(response), 400
-    audio_file = request.files['file']
-    if audio_file.filename == '':
-        logging.error("No audio file selected for upload.")
-        response = {"error": "No selected audio file"}
-        save_request_to_db('/speech_to_text', {}, response)
-        return jsonify(response), 400
-
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], audio_file.filename)
-    logging.info(f"Saving audio file to {file_path}.")
-    audio_file.save(file_path)
-
-    try:
-        logging.info(f"Processing audio file: {file_path}")
-        recognizer = sr.Recognizer()
-        audio = sr.AudioFile(file_path)
-        with audio as source:
-            recognizer.adjust_for_ambient_noise(source)
-            audio_data = recognizer.record(source)
-        text = recognizer.recognize_google(audio_data)
-        response = {"message": "Speech converted to text successfully", "text": text}
-        save_request_to_db('/speech_to_text', {"file_name": audio_file.filename}, response)
-        return jsonify(response), 200
-    except Exception as e:
-        logging.error(f"Error during speech recognition: {e}")
-        response = {"error": "Failed to process speech"}
-        save_request_to_db('/speech_to_text', {"file_name": audio_file.filename}, response)
-        return jsonify(response), 500
-
-
 # API для обработки промта
 @app.route('/process_prompt', methods=['POST'])
 def process_prompt():
     """
     Обработка промта с документом и инструкциями, отправленными с фронтенда.
     """
+    global temp_changes
     logging.info("Processing prompt endpoint was accessed.")
     data = request.json
 
@@ -167,7 +136,6 @@ def process_prompt():
 
     try:
         logging.info("Sending prompt and document text to OpenAI for analysis.")
-        # Используем старую версию OpenAI API
         response = openai.ChatCompletion.create(
             model="gpt-4",  # Укажите актуальную модель
             messages=[
@@ -176,15 +144,19 @@ def process_prompt():
             ],
             max_tokens=1000,
             temperature=0.7,
-)
-
+        )
 
         # Получение текста анализа
         analysis = response['choices'][0]['message']['content']
 
-        response_data = {"message": "Prompt processed successfully", "analysis": analysis}
+        # Сохраняем временные изменения
+        temp_changes = {
+            "instructions": instructions,
+            "document_text": document_text,
+            "analysis": analysis
+        }
 
-        # Сохранение в базу данных
+        response_data = {"message": "Prompt processed successfully", "analysis": analysis}
         save_request_to_db('/process_prompt', data, response_data)
         return jsonify(response_data), 200
 
@@ -193,6 +165,28 @@ def process_prompt():
         response = {"error": "Failed to process prompt"}
         save_request_to_db('/process_prompt', data, response)
         return jsonify(response), 500
+
+
+# API для озвучивания изменений
+@app.route('/speak_changes', methods=['GET'])
+def speak_changes():
+    """
+    Озвучивание последних изменений.
+    """
+    global temp_changes
+    if not temp_changes:
+        return jsonify({"error": "No changes available for speaking."}), 400
+
+    # Текст для озвучивания
+    text_to_speak = temp_changes.get('analysis', 'No analysis available.')
+    audio_path = os.path.join(app.config['TEMP_FOLDER'], 'output.mp3')
+
+    # Используем pyttsx3 для генерации речи
+    engine = pyttsx3.init()
+    engine.save_to_file(text_to_speak, audio_path)
+    engine.runAndWait()
+
+    return send_file(audio_path, as_attachment=True)
 
 
 if __name__ == '__main__':

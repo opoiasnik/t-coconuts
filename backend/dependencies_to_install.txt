@@ -15,3 +15,4 @@ torch
 openai
 sqlalchemy
 json
+pyttsx3
