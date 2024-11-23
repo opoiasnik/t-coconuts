@@ -1,0 +1,14 @@
+# Исключение окружения Python
+venv/
+__pycache__/
+
+# Исключение файлов IDE
+.vscode/
+.idea/
+
+# Логи и временные файлы
+*.log
+*.tmp
+
+# Загруженные файлы
+static/uploaded_docs/
