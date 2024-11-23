@@ -12,3 +12,6 @@ pydub
 pdfplumber
 fpdf
 torch
+openai
+sqlalchemy
+json
