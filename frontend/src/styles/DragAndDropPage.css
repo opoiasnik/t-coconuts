@@ -114,4 +114,120 @@
     font-weight: bold;
     color: #dc3545;
   }
+  .voice-record-btn {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+    margin-left: 10px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .voice-record-btn.recording {
+    background-color: #e53935;
+    color: white;
+    cursor: not-allowed;
+  }
+  
+
+  .instructions-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 5px;
+  }
+  
+  .voice-record-btn {
+    margin-right: 5px;
+  }
+
+  .drag-and-drop-submit-btn {
+    padding: 10px 20px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+  }
+  
+  .drag-and-drop-submit-btn:hover {
+    background-color: #388e3c;
+  }
+  .file-selected-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border: 1px solid #4caf50;
+    border-radius: 8px;
+    background-color: #e8f5e9;
+    margin-top: 10px;
+  }
+  
+  .file-selected-text {
+    color: #4caf50;
+    font-weight: bold;
+  }
+  
+  .upload-success-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .success-icon {
+    color: #4caf50;
+    margin-right: 10px;
+  }
+  
+  .cancel-upload-btn {
+    margin-left: 10px;
+  }
+    
+  /* Стили для кнопки Submit */
+.drag-and-drop-submit-btn {
+  background-color: #4caf50; /* Зеленый */
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.drag-and-drop-submit-btn:hover {
+  background-color: #388e3c; /* Темно-зеленый при наведении */
+}
+
+/* Стили для кнопки Cancel */
+.cancel-upload-btn {
+  background-color: #f44336; /* Красный */
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  margin-left: 10px; /* Отступ между кнопками */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.cancel-upload-btn:hover {
+  background-color: #d32f2f; /* Темно-красный при наведении */
+}
+
+/* Контейнер для кнопок */
+.submit-cancel-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
   
