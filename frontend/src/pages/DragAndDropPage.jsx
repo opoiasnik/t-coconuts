@@ -5,9 +5,9 @@ import { useState, useRef } from "react";
 import axios from "axios";
 import "../styles/DragAndDropPage.css";
 import MicIcon from "@mui/icons-material/Mic";
-import MicOffIcon from "@mui/icons-material/MicOff";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import IconButton from "@mui/material/IconButton";
 import DiffMatchPatch from "diff-match-patch";
 import DiffComponent from "../components/Diff";
@@ -21,6 +21,8 @@ function DragAndDropPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isRecording, setIsRecording] = useState(false); // Voice recording state
   const [isResponseReceived, setIsResponseReceived] = useState(false); // Tracks if model response is received
+  const [explanation, setExplanation] = useState(""); // Explanation of changes
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false); // Controls dropdown visibility
   const fileInputRef = useRef(null);
   const recognitionRef = useRef(null);
 
@@ -55,28 +57,26 @@ function DragAndDropPage() {
     formData.append("file", pdfFile);
 
     try {
-      // Step 1: Convert PDF to text via /upload endpoint
       const uploadResponse = await axios.post("http://127.0.0.1:5000/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       const { results } = uploadResponse.data;
       const extractedText = results.text || "No text extracted.";
       setPdfText(extractedText);
 
-      // Step 2: Send the extracted text and instructions to /process_prompt endpoint
       if (instructions.trim() && extractedText.trim()) {
         const promptResponse = await axios.post("http://127.0.0.1:5000/process_prompt", {
           instructions,
           document_text: extractedText,
         });
 
-        const { analysis } = promptResponse.data;
-        const highlightedElements = highlightDifferences(extractedText, analysis || "");
-        setAiSuggestions(highlightedElements);
-        setIsResponseReceived(true); // Модель ответила, меняем состояние
+        const { analysis, explanation } = promptResponse.data;
+
+        setAiSuggestions(highlightDifferences(extractedText, analysis || ""));
+        setExplanation(explanation.trim());
+
+        setIsResponseReceived(true);
       } else {
         setErrorMessage("Please provide instructions and ensure the text is extracted successfully.");
       }
@@ -92,7 +92,7 @@ function DragAndDropPage() {
         responseType: "blob", // Expecting an audio file
       });
 
-      // Создаем объект URL для воспроизведения аудио
+      // Create a URL object for playing the audio
       const audioUrl = URL.createObjectURL(response.data);
       const audio = new Audio(audioUrl);
       audio.play();
@@ -100,6 +100,10 @@ function DragAndDropPage() {
       console.error("Error fetching audio:", error);
       alert("Unable to fetch audio. Please try again.");
     }
+  };
+
+  const toggleDropdownVisibility = () => {
+    setIsDropdownVisible(!isDropdownVisible);
   };
 
   const highlightDifferences = (original, updated) => {
@@ -174,52 +178,26 @@ function DragAndDropPage() {
     });
   };
 
-  const toggleVoiceInput = () => {
-    if (!("webkitSpeechRecognition" in window)) {
-      alert("Your browser does not support voice recognition.");
-      return;
-    }
+  const renderExplanation = (explanationText) => {
+    const lines = explanationText.split('\n');
 
-    if (!isRecording) {
-      const recognition = new window.webkitSpeechRecognition();
-      recognition.lang = "en-US";
-      recognition.continuous = true;
-      recognition.interimResults = false;
-
-      recognition.onstart = () => {
-        setIsRecording(true);
-        recognitionRef.current = recognition;
-      };
-
-      recognition.onerror = (event) => {
-        console.error("Speech recognition error: ", event.error);
-        setIsRecording(false);
-      };
-
-      recognition.onend = () => {
-        setIsRecording(false);
-        recognitionRef.current = null;
-      };
-
-      recognition.onresult = (event) => {
-        const transcript = Array.from(event.results)
-          .map((result) => result[0].transcript)
-          .join(" ");
-        setInstructions((prev) => `${prev} ${transcript}`.trim());
-      };
-
-      recognition.start();
-    } else {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-        recognitionRef.current = null;
+    return lines.map((line, index) => {
+      // Process headings and lists
+      if (line.startsWith('**') && line.endsWith('**')) {
+        // It's a heading
+        const title = line.replace(/\*\*/g, '');
+        return <h5 key={index}>{title}</h5>;
+      } else if (line.startsWith('- ')) {
+        // List item
+        return <li key={index}>{line.substring(2)}</li>;
+      } else if (line === '') {
+        // Empty line
+        return <br key={index} />;
+      } else {
+        // Regular text
+        return <p key={index}>{line}</p>;
       }
-      setIsRecording(false);
-    }
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current.click();
+    });
   };
 
   return (
@@ -234,16 +212,6 @@ function DragAndDropPage() {
             </p>
 
             <div className="instructions-input-container">
-              <div className="instructions-header">
-                <IconButton
-                  className="voice-record-btn"
-                  color={isRecording ? "error" : "primary"}
-                  onClick={toggleVoiceInput}
-                  aria-label="toggle voice input"
-                >
-                  {isRecording ? <MicOffIcon /> : <MicIcon />}
-                </IconButton>
-              </div>
               <textarea
                 className="instructions-input"
                 placeholder="Enter your instructions for processing the document..."
@@ -254,7 +222,7 @@ function DragAndDropPage() {
 
             <div
               className={`drag-and-drop-upload-box ${pdfFile ? "success-upload" : ""}`}
-              onClick={!pdfFile ? triggerFileInput : undefined}
+              onClick={!pdfFile ? () => fileInputRef.current.click() : undefined}
             >
               <input
                 type="file"
@@ -290,30 +258,41 @@ function DragAndDropPage() {
             <div className="drag-and-drop-column">
               <h3 className="drag-and-drop-section-title">Original Text</h3>
               <div className="drag-and-drop-text-box">
-                {pdfText || (
-                  <p className="drag-and-drop-placeholder">
-                    No document uploaded yet. The text will appear here.
-                  </p>
-                )}
+                {pdfText || <p className="drag-and-drop-placeholder">No document uploaded yet.</p>}
               </div>
             </div>
 
             <div className="drag-and-drop-column">
               <div className="ai-suggestions-header">
                 <h3 className="drag-and-drop-section-title">AI Suggestions</h3>
-                <IconButton
-                  onClick={handleSpeakChanges}
-                  aria-label="speak changes"
-                  color={isResponseReceived ? "primary" : "default"}
-                >
-                  {isResponseReceived ? <VolumeUpIcon /> : <VolumeOffIcon />}
-                </IconButton>
+                <div className="icon-buttons">
+                  <IconButton
+                    onClick={handleSpeakChanges}
+                    aria-label="speak changes"
+                    color={isResponseReceived ? "primary" : "default"}
+                  >
+                    {isResponseReceived ? <VolumeUpIcon /> : <VolumeOffIcon />}
+                  </IconButton>
+                  <IconButton
+                    onClick={toggleDropdownVisibility}
+                    aria-label="toggle explanation visibility"
+                  >
+                    <ArrowDropDownIcon />
+                  </IconButton>
+                </div>
               </div>
+              {isDropdownVisible && (
+                <div className="dropdown-box">
+                  <h4>Explanation of Changes:</h4>
+                  <div className="explanation-content">
+                    {renderExplanation(explanation)}
+                  </div>
+                </div>
+              )}
               <div className="drag-and-drop-text-box ai-suggestions">
                 {aiSuggestions.length > 0 ? aiSuggestions : <p>No suggestions yet.</p>}
               </div>
             </div>
-
           </div>
 
           <Footer />
