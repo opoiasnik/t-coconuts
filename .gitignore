@@ -64,3 +64,5 @@ backend/models/__pycache__/document_validator.cpython-312.pyc
 backend/static/uploaded_docs/Andrii_Pervashov_CV.pdf
 backend/utils/__pycache__/database.cpython-312.pyc
 backend/utils/__pycache__/file_processing.cpython-312.pyc
+backend/static/temp/output.mp3
+backend/__pycache__/models.cpython-312.pyc
