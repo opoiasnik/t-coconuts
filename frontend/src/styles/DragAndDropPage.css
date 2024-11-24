@@ -1,0 +1,329 @@
+/* General Container */
+.drag-and-drop-container {
+  width: 100%;
+  height: 100%; /* Take full height of viewport */
+  margin: 0;
+  padding: 10px;
+  font-family: "Arial", sans-serif;
+  box-sizing: border-box; /* Include padding in the height calculation */
+}
+  
+  /* Header */
+  .drag-and-drop-header {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  
+  .drag-and-drop-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  .drag-and-drop-subtitle {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 15px;
+  }
+  
+  /* Instructions Input */
+  .instructions-input-container {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  
+  .instructions-input {
+    width: 60%;
+    height: 80px;
+    padding: 8px;
+    font-size: 0.9rem;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    resize: none;
+    margin: 0 auto;
+  }
+  
+  /* Upload Box */
+  .drag-and-drop-upload-box {
+    border: 2px dashed #4caf50;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 60%;
+    margin: 0 auto;
+  }
+  
+  .drag-and-drop-upload-box:hover {
+    background-color: #e8f5e9;
+  }
+  
+  .drag-and-drop-input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: -1;
+  }
+  
+  .drag-and-drop-upload-text {
+    font-size: 0.9rem;
+    color: #4caf50;
+    font-weight: bold;
+  }
+  
+  /* Content Section */
+  .drag-and-drop-content {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap; /* Allow wrapping for smaller screens */
+    margin-top: 20px;
+    justify-content: space-between;
+    width: 100%;
+}
+  
+.drag-and-drop-column {
+  flex: 1;
+  min-width: 300px; /* Ensure flexibility */
+  padding: 10px;
+}
+  
+  .drag-and-drop-text-box {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    height: 250px;
+    overflow-y: auto;
+    white-space: pre-wrap; /* Сохраняет табуляцию, пробелы и переносы строк */
+    font-family: monospace; /* Необязательно, для отображения текста в стиле кодового редактора */
+  }
+  
+  
+  .ai-suggestions {
+    background-color: #e8f5e9;
+  }
+  
+  .drag-and-drop-placeholder {
+    color: #6c757d;
+    font-size: 0.9rem;
+  }
+  
+  /* Error Message */
+  .drag-and-drop-error {
+    color: red;
+    margin-top: 10px;
+    font-size: 0.9rem;
+  }
+  
+  /* Unauthorized Message */
+  .drag-and-drop-unauthorized {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #dc3545;
+  }
+  .voice-record-btn {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+    margin-left: 10px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .voice-record-btn.recording {
+    background-color: #e53935;
+    color: white;
+    cursor: not-allowed;
+  }
+  
+
+  .instructions-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 5px;
+    width: 60%;
+    margin: 0 auto;
+  }
+  
+  .voice-record-btn {
+    margin-right: 5px;
+  }
+
+  .drag-and-drop-submit-btn {
+    padding: 10px 20px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+  }
+  
+  .drag-and-drop-submit-btn:hover {
+    background-color: #388e3c;
+  }
+  .file-selected-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border: 1px solid #4caf50;
+    border-radius: 8px;
+    background-color: #e8f5e9;
+    margin-top: 10px;
+  }
+  
+  .file-selected-text {
+    color: #4caf50;
+    font-weight: bold;
+  }
+  
+  .upload-success-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .success-icon {
+    color: #4caf50;
+    margin-right: 10px;
+  }
+  
+  .cancel-upload-btn {
+    margin-left: 10px;
+  }
+    
+  /* Стили для кнопки Submit */
+.drag-and-drop-submit-btn {
+  background-color: #4caf50; /* Зеленый */
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.drag-and-drop-submit-btn:hover {
+  background-color: #388e3c; /* Темно-зеленый при наведении */
+}
+
+/* Стили для кнопки Cancel */
+.cancel-upload-btn {
+  background-color: #f44336; /* Красный */
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  margin-left: 10px; /* Отступ между кнопками */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.cancel-upload-btn:hover {
+  background-color: #d32f2f; /* Темно-красный при наведении */
+}
+
+/* Контейнер для кнопок */
+.submit-cancel-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+html, body {
+    height: 100%; /* Ensure both html and body take full height */
+    width: 100%;  /* Ensure body takes full width */
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+  
+.added {
+  background-color: #d4fcd4; /* Light green for additions */
+  text-decoration: none;
+}
+
+.removed {
+  background-color: #fcd4d4; /* Light red for removals */
+  text-decoration: line-through;
+}
+.diff-component {
+  position: relative;
+  display: inline-block;
+}
+
+.diff-component .icons {
+  position: absolute;
+  top: -20px; /* Adjust as needed */
+  right: 0;
+  display: flex;
+  gap: 2px;
+}
+
+.added {
+  background-color: #e6ffe6; /* Light green background */
+}
+
+.removed {
+  background-color: #ffe6e6; /* Light red background */
+  text-decoration: line-through;
+}
+
+.substitution .removed {
+  background-color: #ffe6e6;
+  text-decoration: line-through;
+}
+
+.substitution .added {
+  background-color: #e6ffe6;
+}
+
+.substitution .arrow {
+  margin: 0 5px;
+}
+.ai-suggestions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Раздвигает элементы: текст влево, динамик вправо */
+}
+
+.ai-suggestions-header h3 {
+  margin: 0;
+  font-size: 1.2rem; /* Размер шрифта для заголовка */
+}
+
+.ai-suggestions-header .MuiIconButton-root {
+  margin-left: 10px; /* Отступ между заголовком и динамиком */
+}
+.explanation-content {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+}
+
+.explanation-content h5 {
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+
+.explanation-content p,
+.explanation-content li {
+  margin-left: 20px;
+}
+

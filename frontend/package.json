@@ -11,7 +11,14 @@
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.17.0",
+    "@emotion/react": "^11.13.5",
+    "@emotion/styled": "^11.13.5",
+    "@mui/icons-material": "^6.1.8",
+    "@mui/material": "^6.1.8",
+    "@mui/styles": "^6.1.8",
+    "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
+    "diff-match-patch": "^1.0.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.0.1"

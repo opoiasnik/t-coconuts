@@ -1,6 +1,18 @@
-pip install flask-cors
-pip install pytesseract
-pip install pillow
-pip install pymongo
-pip install transformers
-pip install torch
+flask-cors
+pytesseract
+pillow
+pymongo
+transformers
+torch
+tqdm
+SpeechRecognition
+pyttsx3
+gtts
+pydub
+pdfplumber
+fpdf
+torch
+openai
+sqlalchemy
+json
+pyttsx3
